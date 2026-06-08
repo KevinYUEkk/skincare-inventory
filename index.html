@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="保養品庫存" />
+  <title>保養品庫存</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f7f5f2;
+      --surface: #ffffff;
+      --border: rgba(0,0,0,0.08);
+      --border-md: rgba(0,0,0,0.14);
+      --text: #1a1a1a;
+      --text-muted: #6b6b6b;
+      --text-hint: #a0a0a0;
+      --green-bg: #eaf3de;
+      --green-text: #3b6d11;
+      --blue-bg: #e6f1fb;
+      --blue-text: #185fa5;
+      --purple-bg: #eeedfe;
+      --purple-text: #534ab7;
+      --red: #e24b4a;
+      --success-bg: #eaf3de;
+      --success-text: #3b6d11;
+      --error-bg: #fcebeb;
+      --error-text: #a32d2d;
+      --warning-bg: #faeeda;
+      --warning-text: #854f0b;
+      --radius: 12px;
+      --radius-sm: 8px;
+      --radius-pill: 999px;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1a1a1a;
+        --surface: #242424;
+        --border: rgba(255,255,255,0.08);
+        --border-md: rgba(255,255,255,0.14);
+        --text: #f0f0f0;
+        --text-muted: #a0a0a0;
+        --text-hint: #666;
+        --green-bg: #173404;
+        --green-text: #c0dd97;
+        --blue-bg: #042c53;
+        --blue-text: #b5d4f4;
+        --purple-bg: #26215c;
+        --purple-text: #cec bf6;
+        --success-bg: #173404;
+        --success-text: #c0dd97;
+        --error-bg: #501313;
+        --error-text: #f7c1c1;
+        --warning-bg: #412402;
+        --warning-text: #fac775;
+      }
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    .top-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      padding: 16px 16px 0;
+      padding-top: calc(16px + env(safe-area-inset-top));
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header h1 span { font-size: 22px; }
+    .sync-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+      font-family: 'Noto Sans TC', sans-serif;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 0.5px solid var(--border-md);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .sync-btn:active { opacity: 0.7; }
+    .sync-btn.syncing svg { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .tab {
+      flex: 1;
+      text-align: center;
+      padding: 8px 4px;
+      font-size: 13px;
+      font-family: 'Noto Sans TC', sans-serif;
+      border-radius: var(--radius-sm);
+      border: 0.5px solid var(--border);
+      cursor: pointer;
+      color: var(--text-muted);
+      background: var(--surface);
+      font-weight: 400;
+      transition: all 0.15s;
+    }
+    .tab.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+      font-weight: 500;
+    }
+    .status {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      margin: 0 16px 12px;
+      display: none;
+      align-items: center;
+      gap: 6px;
+    }
+    .status.show { display: flex; }
+    .status.success { background: var(--success-bg); color: var(--success-text); }
+    .status.error { background: var(--error-bg); color: var(--error-text); }
+    .status.warning { background: var(--warning-bg); color: var(--warning-text); }
+    .content { padding: 4px 16px 32px; }
+    .category { margin-bottom: 24px; }
+    .cat-label {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-hint);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      padding-left: 2px;
+    }
+    .product-card {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin-bottom: 8px;
+      transition: opacity 0.2s;
+    }
+    .product-card.saving { opacity: 0.5; }
+    .product-name {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.45;
+      margin-bottom: 8px;
+    }
+    .badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+    .badge {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: var(--radius-pill);
+      font-weight: 400;
+    }
+    .badge-vol { background: var(--bg); color: var(--text-muted); border: 0.5px solid var(--border-md); }
+    .badge-func { background: var(--green-bg); color: var(--green-text); }
+    .badge-day { background: var(--blue-bg); color: var(--blue-text); }
+    .badge-night { background: var(--purple-bg); color: var(--purple-text); }
+    .qty-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .qty-label { font-size: 13px; color: var(--text-muted); }
+    .qty-ctrl {
+      display: flex;
+      align-items: center;
+      border: 0.5px solid var(--border-md);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+    }
+    .qty-btn {
+      width: 38px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      border: none;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 18px;
+      font-family: 'Noto Sans TC', sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .qty-btn:active { background: var(--border); }
+    .qty-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+    .qty-num {
+      width: 42px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--surface);
+      border-left: 0.5px solid var(--border);
+      border-right: 0.5px solid var(--border);
+    }
+    .qty-num.zero { color: var(--red); }
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-hint);
+      font-size: 14px;
+      line-height: 2;
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--border-md);
+      border-top-color: var(--text-muted);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: inline-block;
+    }
+    .last-sync {
+      font-size: 11px;
+      color: var(--text-hint);
+      text-align: center;
+      padding: 8px 0 16px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="header">
+    <h1><span>🌿</span> 保養品庫存</h1>
+    <button class="sync-btn" id="syncBtn" onclick="loadData()">
+      <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+      </svg>
+      同步
+    </button>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="setView('all',this)">全部</div>
+    <div class="tab" onclick="setView('day',this)">☀ 白天</div>
+    <div class="tab" onclick="setView('night',this)">🌙 晚上</div>
+  </div>
+</div>
+
+<div class="status" id="status"></div>
+<div class="content" id="content">
+  <div class="empty"><div class="spinner"></div><br>載入中...</div>
+</div>
+<div class="last-sync" id="lastSync"></div>
+
+<script>
+const API = 'https://script.google.com/macros/s/AKfycbypVIZNIHSBS29L3nu-cZ_UCgtvW19o22QpdiiBsKT8IZaYoOyFdJZk36CE8w5Xc-XWjQ/exec';
+let allData = [];
+let currentView = 'all';
+
+function setView(v, el) {
+  currentView = v;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  render();
+}
+
+function showStatus(msg, type, duration) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = 'status show ' + (type || '');
+  if (duration) setTimeout(() => el.className = 'status', duration);
+}
+
+async function loadData() {
+  const btn = document.getElementById('syncBtn');
+  btn.classList.add('syncing');
+  btn.disabled = true;
+  showStatus('連接 Google Sheet 中...');
+  try {
+    const res = await fetch(API + '?action=read');
+    const json = await res.json();
+    if (!json.success) throw new Error();
+    allData = json.data;
+    render();
+    showStatus('✓ 同步完成', 'success', 2500);
+    const now = new Date();
+    document.getElementById('lastSync').textContent =
+      '最後同步：' + now.toLocaleTimeString('zh-Hant', { hour: '2-digit', minute: '2-digit' });
+  } catch(e) {
+    showStatus('⚠ 無法連接，請檢查 Apps Script 設定', 'error');
+  } finally {
+    btn.classList.remove('syncing');
+    btn.disabled = false;
+  }
+}
+
+function parseData() {
+  if (!allData.length) return [];
+  const rows = allData.slice(1);
+  const cats = [];
+  let cur = null;
+  rows.forEach((row, i) => {
+    const name = String(row[0] || '').trim();
+    if (!name) return;
+    if (name.startsWith('【')) {
+      cur = { label: name.replace(/[【】]/g, ''), items: [] };
+      cats.push(cur);
+    } else if (cur) {
+      cur.items.push({
+        rowIndex: i + 2,
+        name,
+        qty: parseInt(row[1]) || 0,
+        vol: String(row[2] || '').trim(),
+        day: String(row[3] || '').trim(),
+        night: String(row[4] || '').trim(),
+        func: String(row[5] || '').trim(),
+      });
+    }
+  });
+  return cats;
+}
+
+function render() {
+  let cats = parseData();
+  if (currentView === 'day') {
+    cats = cats.map(c => ({ ...c, items: c.items.filter(i => i.day && i.day !== '-') })).filter(c => c.items.length);
+  } else if (currentView === 'night') {
+    cats = cats.map(c => ({ ...c, items: c.items.filter(i => i.night && i.night !== '-') })).filter(c => c.items.length);
+  }
+  const el = document.getElementById('content');
+  if (!cats.length) {
+    el.innerHTML = '<div class="empty">此分類沒有產品</div>';
+    return;
+  }
+  el.innerHTML = cats.map(cat => `
+    <div class="category">
+      <div class="cat-label">${cat.label}</div>
+      ${cat.items.map(item => `
+        <div class="product-card" id="card-${item.rowIndex}">
+          <div class="product-name">${item.name}</div>
+          <div class="badges">
+            ${item.vol ? `<span class="badge badge-vol">${item.vol}</span>` : ''}
+            ${item.func ? `<span class="badge badge-func">${item.func}</span>` : ''}
+            ${item.day && item.day !== '-' ? `<span class="badge badge-day">☀ ${item.day}</span>` : ''}
+            ${item.night && item.night !== '-' ? `<span class="badge badge-night">🌙 ${item.night}</span>` : ''}
+          </div>
+          <div class="qty-row">
+            <span class="qty-label">庫存數量</span>
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="changeQty(${item.rowIndex},${item.qty},-1)" ${item.qty <= 0 ? 'disabled' : ''}>−</button>
+              <div class="qty-num ${item.qty === 0 ? 'zero' : ''}">${item.qty}</div>
+              <button class="qty-btn" onclick="changeQty(${item.rowIndex},${item.qty},1)">+</button>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+async function changeQty(rowIndex, current, delta) {
+  const newQty = Math.max(0, current + delta);
+  const rowInData = rowIndex - 2;
+  if (allData[rowInData + 1]) allData[rowInData + 1][1] = newQty;
+  render();
+  const card = document.getElementById('card-' + rowIndex);
+  if (card) card.classList.add('saving');
+  try {
+    await fetch(API, {
+      method: 'POST',
+      body: JSON.stringify({ action: 'updateQty', row: rowIndex, qty: newQty })
+    });
+  } catch(e) {
+    showStatus('⚠ 儲存失敗，請重新同步', 'error');
+  }
+  if (card) card.classList.remove('saving');
+}
+
+loadData();
+</script>
+</body>
+</html>
