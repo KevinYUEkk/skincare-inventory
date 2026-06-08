@@ -9,6 +9,7 @@
   <title>保養品庫存</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
   <style>
     :root {
       --bg: #f7f5f2;
@@ -49,7 +50,7 @@
         --blue-bg: #042c53;
         --blue-text: #b5d4f4;
         --purple-bg: #26215c;
-        --purple-text: #cec bf6;
+        --purple-text: #cecbf6;
         --success-bg: #173404;
         --success-text: #c0dd97;
         --error-bg: #501313;
@@ -66,6 +67,44 @@
       min-height: 100vh;
       padding-bottom: env(safe-area-inset-bottom);
     }
+
+    /* ── Login Screen ── */
+    #loginScreen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 24px;
+      gap: 0;
+    }
+    .login-icon { font-size: 52px; margin-bottom: 20px; }
+    .login-title {
+      font-size: 22px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .login-subtitle {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 36px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    #loginError {
+      font-size: 13px;
+      color: var(--error-text);
+      background: var(--error-bg);
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      margin-top: 16px;
+      display: none;
+      text-align: center;
+    }
+
+    /* ── Main App ── */
+    #app { display: none; }
     .top-bar {
       position: sticky;
       top: 0;
@@ -80,15 +119,24 @@
       justify-content: space-between;
       margin-bottom: 14px;
     }
+    .header-left { display: flex; align-items: center; gap: 10px; }
     .header h1 {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 500;
       color: var(--text);
       display: flex;
       align-items: center;
       gap: 8px;
     }
-    .header h1 span { font-size: 22px; }
+    .user-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid var(--border-md);
+      cursor: pointer;
+      object-fit: cover;
+    }
+    .header-right { display: flex; align-items: center; gap: 8px; }
     .sync-btn {
       display: flex;
       align-items: center;
@@ -101,10 +149,20 @@
       border: 0.5px solid var(--border-md);
       background: var(--surface);
       color: var(--text-muted);
-      font-weight: 400;
     }
     .sync-btn:active { opacity: 0.7; }
     .sync-btn.syncing svg { animation: spin 1s linear infinite; }
+    .logout-btn {
+      font-size: 13px;
+      font-family: 'Noto Sans TC', sans-serif;
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      border: 0.5px solid var(--border-md);
+      background: var(--surface);
+      color: var(--text-muted);
+    }
+    .logout-btn:active { opacity: 0.7; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .tabs {
       display: flex;
@@ -122,7 +180,6 @@
       cursor: pointer;
       color: var(--text-muted);
       background: var(--surface);
-      font-weight: 400;
       transition: all 0.15s;
     }
     .tab.active {
@@ -181,7 +238,6 @@
       font-size: 11px;
       padding: 3px 9px;
       border-radius: var(--radius-pill);
-      font-weight: 400;
     }
     .badge-vol { background: var(--bg); color: var(--text-muted); border: 0.5px solid var(--border-md); }
     .badge-func { background: var(--green-bg); color: var(--green-text); }
@@ -256,34 +312,91 @@
 </head>
 <body>
 
-<div class="top-bar">
-  <div class="header">
-    <h1><span>🌿</span> 保養品庫存</h1>
-    <button class="sync-btn" id="syncBtn" onclick="loadData()">
-      <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-      </svg>
-      同步
-    </button>
+<!-- Login Screen -->
+<div id="loginScreen">
+  <div class="login-icon">🌿</div>
+  <div class="login-title">保養品庫存</div>
+  <div class="login-subtitle">請用你的 Google 帳號登入<br>才能存取庫存資料</div>
+  <div id="g_id_onload"
+    data-client_id="134457118851-1lbfr3d5vliktvam1v85vmo94kshmv11.apps.googleusercontent.com"
+    data-callback="handleCredentialResponse"
+    data-auto_select="true"
+    data-itp_support="true">
   </div>
-  <div class="tabs">
-    <div class="tab active" onclick="setView('all',this)">全部</div>
-    <div class="tab" onclick="setView('day',this)">☀ 白天</div>
-    <div class="tab" onclick="setView('night',this)">🌙 晚上</div>
+  <div class="g_id_signin"
+    data-type="standard"
+    data-size="large"
+    data-theme="outline"
+    data-text="sign_in_with"
+    data-shape="rectangular"
+    data-logo_alignment="left">
   </div>
+  <div id="loginError">⚠ 此帳號沒有存取權限</div>
 </div>
 
-<div class="status" id="status"></div>
-<div class="content" id="content">
-  <div class="empty"><div class="spinner"></div><br>載入中...</div>
+<!-- Main App -->
+<div id="app">
+  <div class="top-bar">
+    <div class="header">
+      <h1>🌿 保養品庫存</h1>
+      <div class="header-right">
+        <button class="sync-btn" id="syncBtn" onclick="loadData()">
+          <svg id="syncIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+            <path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+          </svg>
+          同步
+        </button>
+        <button class="logout-btn" onclick="logout()">登出</button>
+      </div>
+    </div>
+    <div class="tabs">
+      <div class="tab active" onclick="setView('all',this)">全部</div>
+      <div class="tab" onclick="setView('day',this)">☀ 白天</div>
+      <div class="tab" onclick="setView('night',this)">🌙 晚上</div>
+    </div>
+  </div>
+
+  <div class="status" id="status"></div>
+  <div class="content" id="content">
+    <div class="empty"><div class="spinner"></div><br>載入中...</div>
+  </div>
+  <div class="last-sync" id="lastSync"></div>
 </div>
-<div class="last-sync" id="lastSync"></div>
 
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbypVIZNIHSBS29L3nu-cZ_UCgtvW19o22QpdiiBsKT8IZaYoOyFdJZk36CE8w5Xc-XWjQ/exec';
+const ALLOWED_EMAIL = 'qpl789@gmail.com';
 let allData = [];
 let currentView = 'all';
 
+// ── Auth ──
+function handleCredentialResponse(response) {
+  const payload = parseJwt(response.credential);
+  if (payload.email !== ALLOWED_EMAIL) {
+    document.getElementById('loginError').style.display = 'block';
+    return;
+  }
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  loadData();
+}
+
+function parseJwt(token) {
+  const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+  return JSON.parse(decodeURIComponent(atob(base64).split('').map(c =>
+    '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
+  ).join('')));
+}
+
+function logout() {
+  google.accounts.id.disableAutoSelect();
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+// ── App ──
 function setView(v, el) {
   currentView = v;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -402,8 +515,6 @@ async function changeQty(rowIndex, current, delta) {
   }
   if (card) card.classList.remove('saving');
 }
-
-loadData();
 </script>
 </body>
 </html>
